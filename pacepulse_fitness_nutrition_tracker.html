@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PacePulse - Daily Walking, Jogging & Nutrition Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              500: '#14b8a6',
+              600: '#0d9488',
+              700: '#0f766e',
+              900: '#134e4a',
+            },
+            accent: {
+              100: '#ffedd5',
+              500: '#f97316',
+              600: '#ea580c',
+            },
+            emerald: {
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    
+    .water-fill {
+      transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(156, 163, 175, 0.4);
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col">
+
+  <!-- TOP HEADER / NAVBAR -->
+  <header class="sticky top-0 z-30 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700/60 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-emerald-400 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+          <i class="fa-solid font-bold fa-person-running text-xl"></i>
+        </div>
+        <div>
+          <span class="font-extrabold text-xl tracking-tight bg-gradient-to-r from-brand-600 to-emerald-500 bg-clip-text text-transparent">PacePulse</span>
+          <span class="hidden sm:inline-block text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300 ml-2">Fitness & Nutrition</span>
+        </div>
+      </div>
+
+      <!-- Quick Status & Theme Switcher -->
+      <div class="flex items-center gap-3 sm:gap-4">
+        <button id="themeToggleBtn" title="Toggle Theme" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+          <i id="themeIcon" class="fa-solid fa-moon text-lg"></i>
+        </button>
+
+        <div class="hidden md:flex items-center gap-2 border-l border-slate-200 dark:border-slate-700 pl-4 text-xs font-medium text-slate-500 dark:text-slate-400">
+          <i class="fa-solid fa-calendar-day text-brand-500"></i>
+          <span id="currentDateDisplay">Today</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN WRAPPER WITH NAVIGATION -->
+  <div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row gap-6">
+
+    <!-- SIDEBAR NAVIGATION (Desktop & Mobile horizontal scroll) -->
+    <aside class="w-full md:w-64 flex-shrink-0">
+      <nav class="flex md:flex-col overflow-x-auto custom-scrollbar gap-2 p-1 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-sm">
+        <button data-tab="dashboard" class="nav-btn active flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-left whitespace-nowrap">
+          <i class="fa-solid fa-chart-pie text-lg w-5"></i>
+          <span>Dashboard</span>
+        </button>
+        <button data-tab="activity" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-left whitespace-nowrap">
+          <i class="fa-solid fa-person-walking text-lg w-5"></i>
+          <span>Activity Log</span>
+        </button>
+        <button data-tab="nutrition" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-left whitespace-nowrap">
+          <i class="fa-solid fa-utensils text-lg w-5"></i>
+          <span>Nutrition & Macros</span>
+        </button>
+        <button data-tab="hydration" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-left whitespace-nowrap">
+          <i class="fa-solid fa-glass-water text-lg w-5"></i>
+          <span>Hydration</span>
+        </button>
+        <button data-tab="analytics" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-left whitespace-nowrap">
+          <i class="fa-solid fa-chart-line text-lg w-5"></i>
+          <span>Analytics & History</span>
+        </button>
+        <button data-tab="settings" class="nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-left whitespace-nowrap">
+          <i class="fa-solid fa-sliders text-lg w-5"></i>
+          <span>Goals & Profile</span>
+        </button>
+      </nav>
+
+      <!-- Active Goal Quick Widget -->
+      <div class="hidden md:block mt-6 p-4 rounded-2xl bg-gradient-to-br from-brand-600 to-emerald-700 text-white shadow-lg shadow-brand-600/20">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider text-brand-100">Daily Step Goal</span>
+          <i class="fa-solid fa-shoe-prints text-brand-200"></i>
+        </div>
+        <div class="text-2xl font-bold mb-1" id="widgetStepCount">0 / 10,000</div>
+        <div class="w-full bg-black/20 rounded-full h-2 mb-2 overflow-hidden">
+          <div id="widgetStepBar" class="bg-white h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+        <div class="text-xs text-brand-100 flex justify-between">
+          <span id="widgetStepPercent">0% Completed</span>
+          <span id="widgetStepRem">10,000 left</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- TAB CONTENTS AREA -->
+    <main class="flex-1 min-w-0">
+
+      <!-- ================= 1. DASHBOARD TAB ================= -->
+      <section id="tab-dashboard" class="tab-content space-y-6">
+        
+        <!-- Welcome Banner -->
+        <div class="p-6 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Welcome back, <span id="dashUserName">Athlete</span>! 👋</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Here is your daily activity, energy balance, and hydration breakdown.</p>
+          </div>
+          <button onclick="switchTab('activity')" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm rounded-xl shadow-md shadow-brand-500/20 transition flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i>
+            <span>Log Activity</span>
+          </button>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          <!-- Steps Card -->
+          <div class="p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 shadow-sm relative overflow-hidden">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Steps</p>
+                <h3 class="text-2xl font-extrabold text-slate-900 dark:text-white mt-1" id="dashStepsVal">0</h3>
+              </div>
+              <div class="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-900/40 text-brand-600 dark:text-brand-400 flex items-center justify-center">
+                <i class="fa-solid fa-shoe-prints text-lg"></i>
+              </div>
+            </div>
+            <div class="mt-4">
+              <div class="flex justify-between text-xs text-slate-500 mb-1">
+                <span>Goal: <span id="dashStepsGoal">10,000</span></span>
+                <span id="dashStepsPct">0%</span>
+              </div>
+              <div class="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                <div id="dashStepsBar" class="bg-brand-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Distance Card -->
+          <div class="p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 shadow-sm">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Distance Covered</p>
+                <h3 class="text-2xl font-extrabold text-slate-900 dark:text-white mt-1"><span id="dashDistanceVal">0.00</span> <span class="text-sm font-normal text-slate-500">km</span></h3>
+              </div>
+              <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <i class="fa-solid fa-route text-lg"></i>
+              </div>
+            </div>
+            <div class="mt-4">
+              <div class="flex justify-between text-xs text-slate-500 mb-1">
+                <span>Goal: <span id="dashDistGoal">8.0</span> km</span>
+                <span id="dashDistPct">0%</span>
+              </div>
+              <div class="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                <div id="dashDistBar" class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Calories Burned Card -->
+          <div class="p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 shadow-sm">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Active Burned</p>
+                <h3 class="text-2xl font-extrabold text-slate-900 dark:text-white mt-1"><span id="dashBurnedVal">0</span> <span class="text-sm font-normal text-slate-500">kcal</span></h3>
+              </div>
+              <div class="w-10 h-10 rounded-xl bg-accent-100 dark:bg-accent-600/20 text-accent-500 flex items-center justify-center">
+                <i class="fa-solid fa-fire text-lg"></i>
+              </div>
+            </div>
+            <div class="mt-4">
+              <p class="text-xs text-slate-500 dark:text-slate-400">Total Expenditure (with BMR): <span id="dashTotalExpVal" class="font-bold text-slate-700 dark:text-slate-200">0</span> kcal</p>
+            </div>
+          </div>
+
+          <!-- Hydration Card -->
+          <div class="p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 shadow-sm">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Water Intake</p>
+                <h3 class="text-2xl font-extrabold text-slate-900 dark:text-white mt-1"><span id="dashWaterVal">0</span> / <span id="dashWaterGoalVal">2500</span> <span class="text-sm font-normal text-slate-500">ml</span></h3>
+              </div>
+              <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/40 text-blue-500 flex items-center justify-center">
+                <i class="fa-solid fa-droplet text-lg"></i>
+              </div>
+            </div>
+            <div class="mt-4">
+              <div class="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                <div id="dashWaterBar" class="bg-blue-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Energy Balance Section -->
+        <div class="p-6 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 shadow-sm">
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-scale-balanced text-brand-500"></i>
+            <span>Daily Energy Balance</span>
+          </h2>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+            
+            <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-700/40 border border-slate-100 dark:border-slate-700 text-center">
+              <span class="text-xs text-slate-500 uppercase font-semibold">Food Intake</span>
+              <div class="text-2xl font-bold text-slate-900 dark:text-white mt-1"><span id="dashIntakeVal">0</span> kcal</div>
+              <p class="text-xs text-slate-400 mt-1">Goal: <span id="dashIntakeGoalVal">2000</span> kcal</p>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-700/40 border border-slate-100 dark:border-slate-700 text-center">
+              <span class="text-xs text-slate-500 uppercase font-semibold">Total Energy Out</span>
+              <div class="text-2xl font-bold text-slate-900 dark:text-white mt-1"><span id="dashEnergyOutVal">0</span> kcal</div>
+              <p class="text-xs text-slate-400 mt-1">BMR (<span id="dashBmrVal">0</span>) + Activity</p>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-white text-center">
+              <span class="text-xs text-slate-300 uppercase font-semibold">Net Energy Balance</span>
+              <div class="text-2xl font-bold mt-1" id="dashNetBalanceVal">0 kcal</div>
+              <p class="text-xs text-slate-300 mt-1" id="dashNetStatus">In Equilibrium</p>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Recent Activities & Today's Meals Quick Overview -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <!-- Quick Activity List -->
+          <div class="p-6 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 shadow-sm flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <i class="fa-solid fa-clock-rotate-left text-brand-500"></i>
+                  <span>Recent Workout Sessions</span>
+                </h3>
+                <button onclick="switchTab('activity')" class="text-xs text-brand-600 hover:text-brand-700 font-semibold">View All</button>
+              </div>
+              <div id="dashRecentActivities" class="space-y-3">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Nutrition Summary -->
+          <div class="p-6 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 shadow-sm">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <i class="fa-solid fa-pie-chart text-brand-500"></i>
+                <span>Macros Breakdown Today</span>
+              </h3>
+              <button onclick="switchTab('nutrition')" class="text-xs text-brand-600 hover:text-brand-700 font-semibold">Log Meals</button>
+            </div>
+
+            <div class="space-y-4">
+              <!-- Protein -->
+              <div>
+                <div class="flex justify-between text-xs font-semibold mb-1">
+                  <span class="text-slate-600 dark:text-slate-300">Protein</span>
+                  <span class="text-slate-500"><span id="dashProteinVal">0</span>g / <span id="dashProteinGoalVal">120</span>g</span>
+                </div>
+                <div class="w-full bg-slate-100 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
+                  <div id="dashProteinBar" class="bg-indigo-500 h-full rounded-full" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <!-- Carbs -->
+              <div>
+                <div class="flex justify-between text-xs font-semibold mb-1">
+                  <span class="text-slate-600 dark:text-slate-300">Carbs</span>
+                  <span class="text-slate-500"><span id="dashCarbsVal">0</span>g / <span id="dashCarbsGoalVal">220</span>g</span>
+                </div>
+                <div class="w-full bg-slate-100 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
+                  <div id="dashCarbsBar" class="bg-amber-500 h-full rounded-full" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <!-- Fat -->
+              <div>
+                <div class="flex justify-between text-xs font-semibold mb-1">
+                  <span class="text-slate-600 dark:text-slate-300">Fats</span>
+                  <span class="text-slate-500"><span id="dashFatVal">0</span>g / <span id="dashFatGoalVal">65</span>g</span>
+                </div>
+                <div class="w-full bg-slate-100 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
+                  <div id="dashFatBar" class="bg-rose-500 h-full rounded-full" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ================= 2. ACTIVITY LOG TAB ================= -->
+      <section id="tab-activity" class="tab-content hidden space-y-6">
+        
+        <!-- Live GPS & Workout Tracker Simulator -->
+        <div class="p-6 rounded-3xl bg-slate-900 text-white shadow-xl relative overflow-hidden">
+          <div class="absolute -right-10 -bottom-10 w-60 h-60 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+            <div>
+              <span class="px-2.5 py-1 rounded-full bg-brand-500/20 text-brand-300 text-xs font-semibold tracking-wide uppercase">Live GPS Simulator</span>
+              <h2 class="text-xl font-bold mt-1">Start Live Session</h2>
+            </div>
+            
+            <div class="flex items-center gap-2">
+              <select id="simActivityType" class="bg-slate-800 border border-slate-700 text-white text-xs font-semibold rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-brand-500">
+                <option value="Walk">Walking</option>
+                <option value="Jog">Jogging</option>
+                <option value="Run">Running</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Timer & Live Metrics Grid -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 text-center">
+            <div class="p-3 bg-slate-800/60 rounded-2xl border border-slate-700/50">
+              <span class="text-xs text-slate-400 block">Duration</span>
+              <span id="simTimerDisplay" class="text-2xl font-mono font-bold text-white">00:00:00</span>
+            </div>
+
+            <div class="p-3 bg-slate-800/60 rounded-2xl border border-slate-700/50">
+              <span class="text-xs text-slate-400 block">Distance</span>
+              <span class="text-2xl font-bold text-white"><span id="simDistDisplay">0.00</span> <span class="text-xs font-normal text-slate-400">km</span></span>
+            </div>
+
+            <div class="p-3 bg-slate-800/60 rounded-2xl border border-slate-700/50">
+              <span class="text-xs text-slate-400 block">Pace</span>
+              <span class="text-2xl font-bold text-white"><span id="simPaceDisplay">0'00"</span> <span class="text-xs font-normal text-slate-400">/km</span></span>
+            </div>
+
+            <div class="p-3 bg-slate-800/60 rounded-2xl border border-slate-700/50">
+              <span class="text-xs text-slate-400 block">Est. Calories</span>
+              <span class="text-2xl font-bold text-accent-500"><span id="simCalDisplay">0</span> <span class="text-xs font-normal text-slate-400">kcal</span></span>
+            </div>
+          </div>
+
+          <!-- Controls -->
+          <div class="flex items-center justify-center gap-4">
+            <button id="simStartBtn" onclick="toggleSimTimer()" class="w-14 h-14 rounded-full bg-brand-500 hover:bg-brand-600 text-white flex items-center justify-center text-xl shadow-lg shadow-brand-500/30 transition transform hover:scale-105">
+              <i class="fa-solid fa-play ml-0.5"></i>
+            </button>
+            <button id="simStopBtn" onclick="stopAndSaveSimSession()" disabled class="w-12 h-12 rounded-full bg-rose-600 hover:bg-rose-700 disabled:opacity-40 text-white flex items-center justify-center text-lg transition">
+              <i class="fa-solid fa-square"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Manual Activity Entry Form -->
+        <div class="p-6 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 shadow-sm">
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-pen-to-square text-brand-500"></i>
+            <span>Log Workout Manually</span>
+          </h3>
+
+          <form id="activityForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Type</label>
+              <select id="actType" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                <option value="Walk">Walking</option>
+                <option value="Jog">Jogging</option>
+                <option value="Run">Running</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Distance (km)</label>
+              <input type="number" step="0.01" min="0.01" id="actDistance" required placeholder="e.g. 3.5" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Duration (minutes)</label>
+              <input type="number" min="1" id="actDuration" required placeholder="e.g. 30" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Estimated Steps</label>
+              <input type="number" id="actSteps" placeholder="Auto calculated if empty" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+            </div>
+
+            <div class="sm:col-span-2 lg:col-span-4 flex justify-end gap-3 mt-2">
+              <button type="submit" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm rounded-xl shadow-md transition">Save Activity</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Activity History Table -->
+        <div class="p-6 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 shadow-sm">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Workout Log History</h3>
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+              <input type="text" id="activitySearch" placeholder="Search activities..." class="w-full sm:w-48 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-1.5 text-xs outline-none">
+            </div>
+          </div>
+
+          <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse min-w-[600px]">
+              <thead>
+                <tr class="border-b border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-400 uppercase">
+                  <th class="py-3 px-3">Date / Time</th>
+                  <th class="py-3 px-3">Type</th>
+                  <th class="py-3 px-3">Distance</th>
+                  <th class="py-3 px-3">Duration</th>
+                  <th class="py-3 px-3">Pace</th>
+                  <th class="py-3 px-3">Steps</th>
+                  <th class="py-3 px-3">Calories</th>
+                  <th class="py-3 px-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="activityTableBody" class="text-sm divide-y divide-slate-100 dark:divide-slate-700/50">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ================= 3. NUTRITION TAB ================= -->
+      <section id="tab-nutrition" class="tab-content hidden space-y-6">
+        
+        <!-- Meal Logger Card -->
+        <div class="p-6 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 shadow-sm">
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-utensils text-brand-500"></i>
+            <span>Log Food & Meal Intake</span>
+          </h3>
+
+          <form id="nutritionForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+            <div class="lg:col-span-2">
+              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Meal / Food Item Name</label>
+              <input type="text" id="foodName" required placeholder="e.g. Oatmeal with Banana" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Meal Type</label>
+              <select id="mealType" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                <option value="Breakfast">Breakfast</option>
+                <option value="Lunch">Lunch</option>
+                <option value="Dinner">Dinner</option>
+                <option value="Snack">Snack</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Calories (kcal)</label>
+              <input type="number" id="foodCalories" required min="0" placeholder="e.g. 350" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Protein (g)</label>
+              <input type="number" id="foodProtein" min="0" placeholder="0" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Carbs (g)</label>
+              <input type="number" id="foodCarbs" min="0" placeholder="0" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Fats (g)</label>
+              <input type="number" id="foodFat" min="0" placeholder="0" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+            </div>
+
+            <div class="sm:col-span-2 lg:col-span-6 flex justify-end gap-3 mt-2">
+              <button type="submit" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm rounded-xl shadow-md transition">Add Food Entry</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Meals Log List -->
+        <div class="p-6 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 shadow-sm">
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4">Today's Meals</h3>
+          
+          <div id="mealsList" class="space-y-3">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ================= 4. HYDRATION TAB ================= -->
+      <section id="tab-hydration" class="tab-content hidden space-y-6">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- Visual Water Glass Display -->
+          <div class="p-6 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 shadow-sm flex flex-col items-center justify-center text-center">
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6">Hydration Progress</h3>
+
+            <!-- Glass Cup Container -->
+            <div class="w-36 h-56 rounded-b-3xl rounded-t-lg border-4 border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-900/60 relative overflow-hidden flex flex-col justify-end p-1 shadow-inner">
+              <div id="waterCupFill" class="water-fill w-full bg-gradient-to-t from-blue-600 to-cyan-400 rounded-b-2xl opacity-90" style="height: 0%"></div>
+              <div class="absolute inset-0 flex items-center justify-center text-slate-700 dark:text-white font-extrabold text-xl drop-shadow">
+                <span id="waterCupPct">0%</span>
+              </div>
+            </div>
+
+            <p class="mt-6 text-sm text-slate-500 dark:text-slate-400">
+              Logged: <span id="waterLoggedText" class="font-bold text-slate-900 dark:text-white">0</span> ml / 
+              Goal: <span id="waterGoalText" class="font-bold text-slate-900 dark:text-white">2500</span> ml
+            </p>
+          </div>
+
+          <!-- Quick Add Controls -->
+          <div class="p-6 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 shadow-sm flex flex-col justify-between">
+            <div>
+              <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4">Quick Water Logger</h3>
+              <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Click a preset button to instantly add water to your daily hydration goal.</p>
+
+              <div class="grid grid-cols-2 gap-3 mb-6">
+                <button onclick="addWater(250)" class="p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-300 font-semibold text-sm transition flex flex-col items-center gap-1">
+                  <i class="fa-solid fa-glass-water text-xl"></i>
+                  <span>+250 ml</span>
+                  <span class="text-xs font-normal opacity-70">Small Glass</span>
+                </button>
+
+                <button onclick="addWater(500)" class="p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-300 font-semibold text-sm transition flex flex-col items-center gap-1">
+                  <i class="fa-solid fa-bottle-water text-xl"></i>
+                  <span>+500 ml</span>
+                  <span class="text-xs font-normal opacity-70">Water Bottle</span>
+                </button>
+              </div>
+
+              <!-- Custom Amount Form -->
+              <form id="customWaterForm" class="flex gap-2">
+                <input type="number" id="customWaterAmount" placeholder="Custom ml (e.g. 330)" min="10" required class="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition">Add</button>
+              </form>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center">
+              <span class="text-xs text-slate-400">Reset water log for today?</span>
+              <button onclick="resetWaterToday()" class="text-xs text-rose-500 hover:underline font-medium">Reset Water</button>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ================= 5. ANALYTICS TAB ================= -->
+      <section id="tab-analytics" class="tab-content hidden space-y-6">
+        
+        <!-- Header & Data Export -->
+        <div class="p-6 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white">Activity & Calorie History</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Visual trend charts over the last 7 recorded entries.</p>
+          </div>
+          <button onclick="exportDataCSV()" class="px-4 py-2.5 bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 text-white font-medium text-xs rounded-xl shadow transition flex items-center gap-2">
+            <i class="fa-solid fa-file-csv text-base"></i>
+            <span>Export Data (CSV)</span>
+          </button>
+        </div>
+
+        <!-- Weekly Step Chart SVG Canvas -->
+        <div class="p-6 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 shadow-sm">
+          <h3 class="text-base font-bold text-slate-900 dark:text-white mb-4">Step Trend History</h3>
+          <div class="w-full h-64 relative flex items-end justify-between gap-2 pt-8 pb-4" id="stepChartContainer">
+            <!-- Dynamic SVG or CSS bars injected via JS -->
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ================= 6. GOALS & PROFILE TAB ================= -->
+      <section id="tab-settings" class="tab-content hidden space-y-6">
+        
+        <div class="p-6 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 shadow-sm">
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-user-gear text-brand-500"></i>
+            <span>User Profile & BMR Settings</span>
+          </h2>
+
+          <form id="profileForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Your Name</label>
+              <input type="text" id="profName" required class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Biological Sex</label>
+              <select id="profSex" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Weight (kg)</label>
+              <input type="number" id="profWeight" required min="30" max="250" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Height (cm)</label>
+              <input type="number" id="profHeight" required min="100" max="230" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Age (Years)</label>
+              <input type="number" id="profAge" required min="10" max="100" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+
+            <div class="sm:col-span-2 lg:col-span-4 pt-2">
+              <button type="submit" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm rounded-xl shadow transition">Save Profile & Recalculate BMR</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Custom Targets Form -->
+        <div class="p-6 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 shadow-sm">
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-bullseye text-brand-500"></i>
+            <span>Daily Fitness Targets</span>
+          </h2>
+
+          <form id="goalsForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Daily Step Goal</label>
+              <input type="number" id="goalSteps" required min="1000" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Distance Goal (km)</label>
+              <input type="number" step="0.5" id="goalDistance" required min="1" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Calorie Intake Target (kcal)</label>
+              <input type="number" id="goalCalories" required min="1000" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Water Target (ml)</label>
+              <input type="number" id="goalWater" required min="500" step="100" class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+
+            <div class="sm:col-span-2 lg:col-span-3 pt-2">
+              <button type="submit" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm rounded-xl shadow transition">Save Targets</button>
+            </div>
+          </form>
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="mt-auto border-t border-slate-200 dark:border-slate-800 py-6 text-center text-xs text-slate-400">
+    <p>© 2026 PacePulse Tracker. All rights reserved.</p>
+  </footer>
+
+  <!-- SCRIPT ENGINE -->
+  <script>
+    // ================= GLOBAL STATE & LOCALSTORAGE =================
+    const STORAGE_KEY = 'pacepulse_app_data';
+
+    let defaultState = {
+      profile: {
+        name: 'Alex Developer',
+        sex: 'male',
+        weight: 70, // kg
+        height: 175, // cm
+        age: 28,
+      },
+      goals: {
+        steps: 10000,
+        distance: 8.0,
+        calories: 2200,
+        water: 2500,
+        protein: 130,
+        carbs: 230,
+        fat: 70
+      },
+      todayWater: 0,
+      activities: [],
+      meals: []
+    };
+
+    let appData = loadData();
+
+    // ================= INITIALIZATION =================
+    document.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      initTabs();
+      initCurrentDate();
+      renderAll();
+      setupFormListeners();
+    });
+
+    function loadData() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try {
+          return { ...defaultState, ...JSON.parse(stored) };
+        } catch (e) {
+          console.error("Failed to parse localstorage", e);
+        }
+      }
+      return defaultState;
+    }
+
+    function saveData() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+      renderAll();
+    }
+
+    function initCurrentDate() {
+      const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
+      document.getElementById('currentDateDisplay').textContent = new Date().toLocaleDateString(undefined, options);
+    }
+
+    // ================= THEME TOGGLE =================
+    function initTheme() {
+      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+        document.getElementById('themeIcon').className = 'fa-solid fa-sun text-lg text-amber-400';
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.getElementById('themeIcon').className = 'fa-solid fa-moon text-lg';
+      }
+
+      document.getElementById('themeToggleBtn').addEventListener('click', () => {
+        if (document.documentElement.classList.contains('dark')) {
+          document.documentElement.classList.remove('dark');
+          localStorage.theme = 'light';
+          document.getElementById('themeIcon').className = 'fa-solid fa-moon text-lg';
+        } else {
+          document.documentElement.classList.add('dark');
+          localStorage.theme = 'dark';
+          document.getElementById('themeIcon').className = 'fa-solid fa-sun text-lg text-amber-400';
+        }
+      });
+    }
+
+    // ================= TAB NAVIGATION =================
+    function initTabs() {
+      const navBtns = document.querySelectorAll('.nav-btn');
+      navBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const target = btn.getAttribute('data-tab');
+          switchTab(target);
+        });
+      });
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        if (btn.getAttribute('data-tab') === tabId) {
+          btn.classList.add('bg-brand-500', 'text-white', 'shadow-md', 'shadow-brand-500/20');
+          btn.classList.remove('text-slate-600', 'dark:text-slate-300', 'hover:bg-slate-100', 'dark:hover:bg-slate-700/50');
+        } else {
+          btn.classList.remove('bg-brand-500', 'text-white', 'shadow-md', 'shadow-brand-500/20');
+          btn.classList.add('text-slate-600', 'dark:text-slate-300', 'hover:bg-slate-100', 'dark:hover:bg-slate-700/50');
+        }
+      });
+
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        if (tab.id === `tab-${tabId}`) {
+          tab.classList.remove('hidden');
+        } else {
+          tab.classList.add('hidden');
+        }
+      });
+
+      if (tabId === 'analytics') {
+        renderCharts();
+      }
+    }
+
+    // ================= BMR & MET CALCULATIONS =================
+    function calculateBMR() {
+      const { sex, weight, height, age } = appData.profile;
+      // Harris-Benedict Equation
+      if (sex === 'male') {
+        return Math.round(88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age));
+      } else {
+        return Math.round(447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age));
+      }
+    }
+
+    function calculateCaloriesBurned(type, durationMins, distKm) {
+      const weight = appData.profile.weight || 70;
+      // MET values: Walk ~3.8, Jog ~7.5, Run ~10.0
+      let met = 3.8;
+      if (type === 'Jog') met = 7.5;
+      if (type === 'Run') met = 10.0;
+
+      const durationHours = durationMins / 60;
+      return Math.round(met * weight * durationHours);
+    }
+
+    // ================= RENDER LOGIC =================
+    function renderAll() {
+      renderDashboard();
+      renderActivities();
+      renderMeals();
+      renderHydration();
+      populateForms();
+    }
+
+    function renderDashboard() {
+      const bmr = calculateBMR();
+      const totalSteps = appData.activities.reduce((acc, curr) => acc + (parseInt(curr.steps) || 0), 0);
+      const totalDist = appData.activities.reduce((acc, curr) => acc + parseFloat(curr.distance || 0), 0);
+      const totalBurned = appData.activities.reduce((acc, curr) => acc + parseInt(curr.calories || 0), 0);
+      
+      const totalIntake = appData.meals.reduce((acc, curr) => acc + parseInt(curr.calories || 0), 0);
+      const totalProtein = appData.meals.reduce((acc, curr) => acc + parseInt(curr.protein || 0), 0);
+      const totalCarbs = appData.meals.reduce((acc, curr) => acc + parseInt(curr.carbs || 0), 0);
+      const totalFat = appData.meals.reduce((acc, curr) => acc + parseInt(curr.fat || 0), 0);
+
+      // Name
+      document.getElementById('dashUserName').textContent = appData.profile.name || 'Athlete';
+
+      // Steps
+      document.getElementById('dashStepsVal').textContent = totalSteps.toLocaleString();
+      document.getElementById('dashStepsGoal').textContent = appData.goals.steps.toLocaleString();
+      const stepPct = Math.min(Math.round((totalSteps / appData.goals.steps) * 100), 100);
+      document.getElementById('dashStepsPct').textContent = `${stepPct}%`;
+      document.getElementById('dashStepsBar').style.width = `${stepPct}%`;
+
+      // Widget Steps Sidebar
+      document.getElementById('widgetStepCount').textContent = `${totalSteps.toLocaleString()} / ${appData.goals.steps.toLocaleString()}`;
+      document.getElementById('widgetStepBar').style.width = `${stepPct}%`;
+      document.getElementById('widgetStepPercent').textContent = `${stepPct}% Completed`;
+      const remSteps = Math.max(0, appData.goals.steps - totalSteps);
+      document.getElementById('widgetStepRem').textContent = `${remSteps.toLocaleString()} left`;
+
+      // Distance
+      document.getElementById('dashDistanceVal').textContent = totalDist.toFixed(2);
+      document.getElementById('dashDistGoal').textContent = parseFloat(appData.goals.distance).toFixed(1);
+      const distPct = Math.min(Math.round((totalDist / appData.goals.distance) * 100), 100);
+      document.getElementById('dashDistPct').textContent = `${distPct}%`;
+      document.getElementById('dashDistBar').style.width = `${distPct}%`;
+
+      // Burned
+      document.getElementById('dashBurnedVal').textContent = totalBurned;
+      const totalExpenditure = bmr + totalBurned;
+      document.getElementById('dashTotalExpVal').textContent = totalExpenditure;
+
+      // Water
+      document.getElementById('dashWaterVal').textContent = appData.todayWater;
+      document.getElementById('dashWaterGoalVal').textContent = appData.goals.water;
+      const waterPct = Math.min(Math.round((appData.todayWater / appData.goals.water) * 100), 100);
+      document.getElementById('dashWaterBar').style.width = `${waterPct}%`;
+
+      // Energy Balance
+      document.getElementById('dashIntakeVal').textContent = totalIntake;
+      document.getElementById('dashIntakeGoalVal').textContent = appData.goals.calories;
+      document.getElementById('dashEnergyOutVal').textContent = totalExpenditure;
+      document.getElementById('dashBmrVal').textContent = bmr;
+
+      const netBalance = totalIntake - totalExpenditure;
+      const netElem = document.getElementById('dashNetBalanceVal');
+      const statusElem = document.getElementById('dashNetStatus');
+
+      if (netBalance > 0) {
+        netElem.textContent = `+${netBalance} kcal`;
+        netElem.className = 'text-2xl font-bold mt-1 text-amber-400';
+        statusElem.textContent = 'Caloric Surplus';
+      } else if (netBalance < 0) {
+        netElem.textContent = `${netBalance} kcal`;
+        netElem.className = 'text-2xl font-bold mt-1 text-emerald-400';
+        statusElem.textContent = 'Caloric Deficit';
+      } else {
+        netElem.textContent = '0 kcal';
+        netElem.className = 'text-2xl font-bold mt-1 text-slate-200';
+        statusElem.textContent = 'In Equilibrium';
+      }
+
+      // Recent Activity List (Last 3)
+      const recentContainer = document.getElementById('dashRecentActivities');
+      recentContainer.innerHTML = '';
+      if (appData.activities.length === 0) {
+        recentContainer.innerHTML = `<p class="text-xs text-slate-400 py-4 text-center">No workout sessions logged yet today.</p>`;
+      } else {
+        appData.activities.slice(-3).reverse().forEach(act => {
+          const item = document.createElement('div');
+          item.className = 'flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-700/50';
+          item.innerHTML = `
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-xl bg-brand-100 dark:bg-brand-900/40 text-brand-600 flex items-center justify-center text-xs font-bold">
+                ${act.type === 'Walk' ? '<i class="fa-solid fa-person-walking"></i>' : '<i class="fa-solid fa-person-running"></i>'}
+              </div>
+              <div>
+                <span class="text-xs font-bold text-slate-800 dark:text-slate-100">${act.type}</span>
+                <span class="text-[10px] text-slate-400 block">${act.time}</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="text-xs font-bold text-slate-800 dark:text-slate-100">${act.distance} km</span>
+              <span class="text-[10px] text-slate-400 block">${act.duration} min • ${act.calories} kcal</span>
+            </div>
+          `;
+          recentContainer.appendChild(item);
+        });
+      }
+
+      // Macros
+      document.getElementById('dashProteinVal').textContent = totalProtein;
+      document.getElementById('dashProteinGoalVal').textContent = appData.goals.protein;
+      document.getElementById('dashProteinBar').style.width = `${Math.min(100, Math.round((totalProtein / appData.goals.protein) * 100))}%`;
+
+      document.getElementById('dashCarbsVal').textContent = totalCarbs;
+      document.getElementById('dashCarbsGoalVal').textContent = appData.goals.carbs;
+      document.getElementById('dashCarbsBar').style.width = `${Math.min(100, Math.round((totalCarbs / appData.goals.carbs) * 100))}%`;
+
+      document.getElementById('dashFatVal').textContent = totalFat;
+      document.getElementById('dashFatGoalVal').textContent = appData.goals.fat;
+      document.getElementById('dashFatBar').style.width = `${Math.min(100, Math.round((totalFat / appData.goals.fat) * 100))}%`;
+    }
+
+    function renderActivities() {
+      const tbody = document.getElementById('activityTableBody');
+      tbody.innerHTML = '';
+
+      if (appData.activities.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-xs text-slate-400">No workout records found. Start live session or add manually!</td></tr>`;
+        return;
+      }
+
+      appData.activities.slice().reverse().forEach((act, idx) => {
+        const realIdx = appData.activities.length - 1 - idx;
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-700/30 transition';
+        tr.innerHTML = `
+          <td class="py-3 px-3 text-xs text-slate-500">${act.date || 'Today'} ${act.time || ''}</td>
+          <td class="py-3 px-3 font-semibold text-slate-800 dark:text-slate-200">${act.type}</td>
+          <td class="py-3 px-3">${act.distance} km</td>
+          <td class="py-3 px-3">${act.duration} mins</td>
+          <td class="py-3 px-3 text-xs font-mono">${act.pace || 'N/A'}</td>
+          <td class="py-3 px-3">${(act.steps || 0).toLocaleString()}</td>
+          <td class="py-3 px-3 text-accent-500 font-semibold">${act.calories} kcal</td>
+          <td class="py-3 px-3 text-right">
+            <button onclick="deleteActivity(${realIdx})" class="text-slate-400 hover:text-rose-500 text-xs p-1 transition"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function deleteActivity(index) {
+      appData.activities.splice(index, 1);
+      saveData();
+    }
+
+    function renderMeals() {
+      const container = document.getElementById('mealsList');
+      container.innerHTML = '';
+
+      if (appData.meals.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-400 py-4 text-center">No meals logged for today.</p>`;
+        return;
+      }
+
+      appData.meals.forEach((meal, idx) => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-700/50';
+        div.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="px-2.5 py-1 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold">
+              ${meal.type}
+            </div>
+            <div>
+              <span class="font-bold text-sm text-slate-800 dark:text-slate-100">${meal.name}</span>
+              <span class="text-xs text-slate-400 block">P: ${meal.protein}g • C: ${meal.carbs}g • F: ${meal.fat}g</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="font-bold text-sm text-slate-800 dark:text-slate-100">${meal.calories} kcal</span>
+            <button onclick="deleteMeal(${idx})" class="text-slate-400 hover:text-rose-500 text-xs p-1 transition"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function deleteMeal(index) {
+      appData.meals.splice(index, 1);
+      saveData();
+    }
+
+    function renderHydration() {
+      const logged = appData.todayWater;
+      const goal = appData.goals.water;
+      const pct = Math.min(100, Math.round((logged / goal) * 100));
+
+      document.getElementById('waterCupFill').style.height = `${pct}%`;
+      document.getElementById('waterCupPct').textContent = `${pct}%`;
+      document.getElementById('waterLoggedText').textContent = logged;
+      document.getElementById('waterGoalText').textContent = goal;
+    }
+
+    function addWater(amount) {
+      appData.todayWater = (appData.todayWater || 0) + parseInt(amount);
+      saveData();
+    }
+
+    function resetWaterToday() {
+      appData.todayWater = 0;
+      saveData();
+    }
+
+    function populateForms() {
+      // Profile
+      document.getElementById('profName').value = appData.profile.name;
+      document.getElementById('profSex').value = appData.profile.sex;
+      document.getElementById('profWeight').value = appData.profile.weight;
+      document.getElementById('profHeight').value = appData.profile.height;
+      document.getElementById('profAge').value = appData.profile.age;
+
+      // Goals
+      document.getElementById('goalSteps').value = appData.goals.steps;
+      document.getElementById('goalDistance').value = appData.goals.distance;
+      document.getElementById('goalCalories').value = appData.goals.calories;
+      document.getElementById('goalWater').value = appData.goals.water;
+    }
+
+    // ================= FORM LISTENERS =================
+    function setupFormListeners() {
+      // Manual Activity
+      document.getElementById('activityForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const type = document.getElementById('actType').value;
+        const dist = parseFloat(document.getElementById('actDistance').value);
+        const duration = parseInt(document.getElementById('actDuration').value);
+        let steps = parseInt(document.getElementById('actSteps').value);
+
+        if (!steps) {
+          // Average stride calculation ~1300 steps per km for walking, 1100 for running
+          steps = Math.round(dist * (type === 'Walk' ? 1350 : 1100));
+        }
+
+        const calories = calculateCaloriesBurned(type, duration, dist);
+        const paceMins = Math.floor(duration / dist);
+        const paceSecs = Math.round(((duration / dist) - paceMins) * 60);
+        const paceStr = `${paceMins}'${paceSecs < 10 ? '0' : ''}${paceSecs}"`;
+
+        const newAct = {
+          date: new Date().toLocaleDateString(),
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          type,
+          distance: dist.toFixed(2),
+          duration,
+          steps,
+          calories,
+          pace: paceStr
+        };
+
+        appData.activities.push(newAct);
+        saveData();
+        e.target.reset();
+      });
+
+      // Nutrition Form
+      document.getElementById('nutritionForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const meal = {
+          name: document.getElementById('foodName').value,
+          type: document.getElementById('mealType').value,
+          calories: parseInt(document.getElementById('foodCalories').value) || 0,
+          protein: parseInt(document.getElementById('foodProtein').value) || 0,
+          carbs: parseInt(document.getElementById('foodCarbs').value) || 0,
+          fat: parseInt(document.getElementById('foodFat').value) || 0,
+        };
+
+        appData.meals.push(meal);
+        saveData();
+        e.target.reset();
+      });
+
+      // Custom Water
+      document.getElementById('customWaterForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const amt = document.getElementById('customWaterAmount').value;
+        addWater(amt);
+        e.target.reset();
+      });
+
+      // Profile Form
+      document.getElementById('profileForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        appData.profile = {
+          name: document.getElementById('profName').value,
+          sex: document.getElementById('profSex').value,
+          weight: parseFloat(document.getElementById('profWeight').value),
+          height: parseFloat(document.getElementById('profHeight').value),
+          age: parseInt(document.getElementById('profAge').value)
+        };
+        saveData();
+        alert('Profile & BMR parameters updated successfully!');
+      });
+
+      // Goals Form
+      document.getElementById('goalsForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        appData.goals = {
+          ...appData.goals,
+          steps: parseInt(document.getElementById('goalSteps').value),
+          distance: parseFloat(document.getElementById('goalDistance').value),
+          calories: parseInt(document.getElementById('goalCalories').value),
+          water: parseInt(document.getElementById('goalWater').value)
+        };
+        saveData();
+        alert('Daily goals updated successfully!');
+      });
+    }
+
+    // ================= LIVE GPS SIMULATOR TIMER =================
+    let simTimer = null;
+    let simSeconds = 0;
+    let simDistance = 0;
+    let simIsRunning = false;
+
+    function toggleSimTimer() {
+      const btn = document.getElementById('simStartBtn');
+      const stopBtn = document.getElementById('simStopBtn');
+
+      if (!simIsRunning) {
+        simIsRunning = true;
+        btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        btn.classList.replace('bg-brand-500', 'bg-amber-500');
+        stopBtn.disabled = false;
+
+        simTimer = setInterval(() => {
+          simSeconds++;
+          const type = document.getElementById('simActivityType').value;
+          
+          // Speed simulation based on type
+          let speedKmH = 4.5; // Walk
+          if (type === 'Jog') speedKmH = 8.0;
+          if (type === 'Run') speedKmH = 11.5;
+
+          simDistance += (speedKmH / 3600); // dist per sec
+
+          updateSimUI(type);
+        }, 1000);
+
+      } else {
+        simIsRunning = false;
+        clearInterval(simTimer);
+        btn.innerHTML = '<i class="fa-solid fa-play ml-0.5"></i>';
+        btn.classList.replace('bg-amber-500', 'bg-brand-500');
+      }
+    }
+
+    function updateSimUI(type) {
+      const hrs = Math.floor(simSeconds / 3600).toString().padStart(2, '0');
+      const mins = Math.floor((simSeconds % 3600) / 60).toString().padStart(2, '0');
+      const secs = (simSeconds % 60).toString().padStart(2, '0');
+      document.getElementById('simTimerDisplay').textContent = `${hrs}:${mins}:${secs}`;
+
+      document.getElementById('simDistDisplay').textContent = simDistance.toFixed(2);
+
+      // Pace
+      if (simDistance > 0) {
+        const totalMins = simSeconds / 60;
+        const paceVal = totalMins / simDistance;
+        const pMins = Math.floor(paceVal);
+        const pSecs = Math.round((paceVal - pMins) * 60);
+        document.getElementById('simPaceDisplay').textContent = `${pMins}'${pSecs < 10 ? '0' : ''}${pSecs}"`;
+      }
+
+      // Calories
+      const durationMins = Math.max(1, Math.round(simSeconds / 60));
+      const calories = calculateCaloriesBurned(type, durationMins, simDistance);
+      document.getElementById('simCalDisplay').textContent = calories;
+    }
+
+    function stopAndSaveSimSession() {
+      if (simTimer) clearInterval(simTimer);
+
+      if (simDistance > 0) {
+        const type = document.getElementById('simActivityType').value;
+        const durationMins = Math.max(1, Math.round(simSeconds / 60));
+        const calories = calculateCaloriesBurned(type, durationMins, simDistance);
+        const steps = Math.round(simDistance * (type === 'Walk' ? 1350 : 1100));
+
+        const newAct = {
+          date: new Date().toLocaleDateString(),
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          type,
+          distance: simDistance.toFixed(2),
+          duration: durationMins,
+          steps,
+          calories,
+          pace: document.getElementById('simPaceDisplay').textContent
+        };
+
+        appData.activities.push(newAct);
+        saveData();
+        alert(`Saved ${type} session: ${simDistance.toFixed(2)} km, ${calories} kcal burned!`);
+      }
+
+      // Reset Live GPS
+      simSeconds = 0;
+      simDistance = 0;
+      simIsRunning = false;
+      document.getElementById('simStartBtn').innerHTML = '<i class="fa-solid fa-play ml-0.5"></i>';
+      document.getElementById('simStartBtn').classList.replace('bg-amber-500', 'bg-brand-500');
+      document.getElementById('simStopBtn').disabled = true;
+      document.getElementById('simTimerDisplay').textContent = '00:00:00';
+      document.getElementById('simDistDisplay').textContent = '0.00';
+      document.getElementById('simPaceDisplay').textContent = '0\'00"';
+      document.getElementById('simCalDisplay').textContent = '0';
+    }
+
+    // ================= ANALYTICS SVG CHARTS =================
+    function renderCharts() {
+      const container = document.getElementById('stepChartContainer');
+      container.innerHTML = '';
+
+      if (appData.activities.length === 0) {
+        container.innerHTML = `<p class="w-full text-center text-xs text-slate-400">Log activities to render analytics charts.</p>`;
+        return;
+      }
+
+      const recentActs = appData.activities.slice(-7);
+      const maxSteps = Math.max(...recentActs.map(a => a.steps || 1000), appData.goals.steps);
+
+      recentActs.forEach(act => {
+        const heightPct = Math.min(100, Math.round(((act.steps || 0) / maxSteps) * 100));
+        const bar = document.createElement('div');
+        bar.className = 'flex-1 flex flex-col items-center h-full justify-end group';
+        bar.innerHTML = `
+          <div class="text-[10px] font-bold text-brand-600 dark:text-brand-400 opacity-0 group-hover:opacity-100 transition mb-1">${(act.steps || 0).toLocaleString()}</div>
+          <div class="w-full max-w-[36px] bg-brand-500 hover:bg-brand-600 rounded-t-xl transition-all duration-500" style="height: ${heightPct}%"></div>
+          <span class="text-[10px] text-slate-400 mt-2 truncate w-full text-center">${act.date || 'Log'}</span>
+        `;
+        container.appendChild(bar);
+      });
+    }
+
+    // ================= CSV EXPORT =================
+    function exportDataCSV() {
+      let csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "Type,Date,Time,Distance(km),Duration(min),Steps,Calories(kcal)\n";
+
+      appData.activities.forEach(a => {
+        csvContent += `${a.type},${a.date},${a.time},${a.distance},${a.duration},${a.steps},${a.calories}\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `PacePulse_Export_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
